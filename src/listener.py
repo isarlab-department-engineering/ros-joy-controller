@@ -2,7 +2,7 @@
 
 #
 # This script allows control over a raspberry pi based robot
-# reads strings from rospibot_network topic and decodes it 
+# reads strings from rospibot_network topic and decodes it
 # to control the motors using Adafruit libraries
 #
 # script by Andrea Fioroni - andrifiore@gmail.com
@@ -10,7 +10,7 @@
 #
 
 import rospy
-import sys
+import sys 
 from std_msgs.msg import String
 from Adafruit_MotorHAT import Adafruit_MotorHAT, Adafruit_DCMotor
 import time
@@ -26,11 +26,11 @@ class rospibot_network:
 
 	# motor HAT setup
         self.mh = Adafruit_MotorHAT(addr=0x60) # setup Adafruit Motor HAT on 0x60 address
-	
+
 	# LED setup
 	GPIO.setmode(GPIO.BCM)
 	GPIO.setwarnings(False)
-	GPIO.setup(18,GPIO.OUT)	
+	GPIO.setup(18,GPIO.OUT)
 	GPIO.output(18,GPIO.HIGH)
 	GPIO.setup(17,GPIO.OUT)
 	GPIO.output(17,GPIO.HIGH)
@@ -40,23 +40,23 @@ class rospibot_network:
             self.mh.getMotor(1).run(Adafruit_MotorHAT.RELEASE)
             self.mh.getMotor(2).run(Adafruit_MotorHAT.RELEASE)
 	    GPIO.output(18,GPIO.LOW)
-            atexit.register(turnOffMotors)    
-	
+            atexit.register(turnOffMotors)
+
 	# setup 2 motors
         self.m1 = self.mh.getMotor(1) # left motor
         self.m2 = self.mh.getMotor(2) # right motor
 
         # setup motors' speed
-        self.speed = 150 # default speed 
+        self.speed = 150 # default speed
         self.motorBalance = 0 # speed cutoff (to balance the motors), era a 8
         self.m1.setSpeed(self.speed + self.motorBalance) # left motor
         self.m2.setSpeed(self.speed) # right motor
-	
+
 	rospy.Subscriber("rospibot_network", String, self.callback) # subscribe to rospibot_network topic
-	
+
     def callback(self,data): # runs whenever any data is published on the topic
         rospy.loginfo(rospy.get_caller_id() + " Movement direction: %s", data.data)
-   
+
         input = data.data # input received from rospibot_network (will always be a string)
 
         # move directions = "wasd"
@@ -70,7 +70,7 @@ class rospibot_network:
 	    rospy.loginfo("Red semaphore found")
 	# GGG = green semaphore
 	if(self.redSemaphore == 1 and input == "GGG"):
-	    self.redSemaphore = 0 
+	    self.redSemaphore = 0
         # W - move forward
         if(self.redSemaphore == 0 and input == "w"):
             self.m1.run(Adafruit_MotorHAT.FORWARD)
