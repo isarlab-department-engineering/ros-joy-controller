@@ -9,12 +9,9 @@
 # GitHub repo: https://github.com/tanicar/rospibot_project
 #
 
-import rospy
-import sys
+import rospy,sys,time,atexit
 from std_msgs.msg import String
 from std_msgs.msg import Int16MultiArray
-import time
-import atexit
 
 class rospibot_network:
 
@@ -28,6 +25,7 @@ class rospibot_network:
 	self.m2_speed = -133
     
 	self.controlPub = rospy.Publisher("cmd", Int16MultiArray, queue_size=10) # publish on motor_hat's cmd topic
+	self.controlInfoPub = rospy.Publisher("cmdinfo", String, queue_size=10) # publish info about control 
 	rospy.Subscriber("ros_joy_controller", String, self.callback1) # subscribe to ros_joy_controller topic
         rospy.Subscriber("traffic_light_detection", String, self.callback0) # subscribe to traffic_light_detection topic
 	rospy.loginfo("Listening on two different topics")
@@ -65,18 +63,23 @@ class rospibot_network:
             if dir_str == "w" :     # w = move forward
     	        send([self.m1_speed,self.m2_speed,0,0])
     	        rospy.loginfo(" - Move Forward")
+		self.controlInfoPub.publish("forward")
             elif dir_str == "a" :   # a = turn left
                 send([0,self.m2_speed,0,0])
     	        rospy.loginfo(" - Turn Left")
+		self.controlInfoPub.publish("left")
             elif dir_str == "s" :   # s = move backward
                 send([-self.m1_speed,-self.m2_speed,0,0])
     	        rospy.loginfo(" - Move Backward")
+		self.controlInfoPub.publish("backward")
             elif dir_str == "d" :   # d = turn right
                 send([self.m1_speed,0,0,0])
     	        rospy.loginfo(" - Turn Right")
+		self.controlInfoPub.publish("right")
             elif dir_str == "x" :   # x = stop
     	        send([0,0,0,0])
     	        rospy.loginfo(" - Stop")
+		self.controlInfoPub.publish("stop")
 
 def main(args):
     rospi_net = rospibot_network()
