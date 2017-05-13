@@ -3,10 +3,11 @@
 #
 # This script allows control over a raspberry pi based robot
 # reads strings from rospibot_network topic and decodes it
-# to control the motors using Adafruit libraries
+# to control the motors using Adafruit libraries and the 
+# motor_hat ROS Node (which takes a Int16MultiArray as input)
 #
 # script by Andrea Fioroni - andrifiore@gmail.com
-# GitHub repo: https://github.com/tanicar/rospibot_project
+# GitHub repo: https://github.com/isarlab-department-engineering/ros-joy-controller
 #
 
 import rospy,sys,time,atexit
