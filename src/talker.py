@@ -4,7 +4,7 @@
 # This script allows to send strings over the ros_joy_controller topic
 #
 # script by Andrea Fioroni - andrifiore@gmail.com
-# GitHub repo: https://github.com/tanicar/rospibot_project
+# GitHub repo: https://github.com/isarlab-department-engineering/ros-joy-controller
 #
 
 import rospy
