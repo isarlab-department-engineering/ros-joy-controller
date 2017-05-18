@@ -18,7 +18,7 @@ class rospibot_network:
 
     def __init__(self):
 
-	# semaphore variable
+	# semaphore variable 
 	self.semaphore = 0
 	
 	# motor speed variables
