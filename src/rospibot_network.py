@@ -53,6 +53,8 @@ class rospibot_network:
         rospy.loginfo(rospy.get_caller_id() + " Getting User Input Info: %s", data.data)
         dir_str = data.data # input received (will always be a string)
 
+	return 
+
 	def send(values):
             values = [-v for v in values]
             msg = Int16MultiArray()
@@ -85,7 +87,9 @@ class rospibot_network:
 		self.controlInfoPub.publish("stop")
 
     def callback2(self,data):
-	#do nothing
+	if self.semaphore == 0 :
+	    self.controlPub.publish(data)
+
 
 def main(args):
     rospi_net = rospibot_network()
