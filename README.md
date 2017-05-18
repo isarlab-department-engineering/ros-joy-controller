@@ -26,3 +26,11 @@ Encoded Strings:
 - d = turn right
 - s = move backward
 - x = stop
+
+
+
+Launch: "roslaunch rospibot_network rospibotRemote.launch" on the remote computer will launch:
+- talker.py
+- listener.py (from ros-pi-camera-interface package)
+- grey_listener (from ros-pi-camera-interface package)
+- mask_listener (from ros-pi-camera-interface package)
