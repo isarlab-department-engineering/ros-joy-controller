@@ -28,7 +28,7 @@ class rospibot_network:
 	self.controlPub = rospy.Publisher("cmd", Int16MultiArray, queue_size=10) # publish on motor_hat's cmd topic
 	self.controlInfoPub = rospy.Publisher("cmdinfo", String, queue_size=10) # publish info about control 
 
-	rospy.Subscriber("line_detection_topic", Int16MultiArray, self.callback2)
+	rospy.Subscriber("", Int16MultiArray, self.callback2)
 	rospy.Subscriber("ros_joy_controller", String, self.callback1) # subscribe to ros_joy_controller topic
         rospy.Subscriber("traffic_light_detection", String, self.callback0) # subscribe to traffic_light_detection topic
 	rospy.loginfo("Listening on two different topics")
@@ -52,6 +52,8 @@ class rospibot_network:
     def callback1(self,data): # runs whenever any data is published on the ros_joy_controller topic
         rospy.loginfo(rospy.get_caller_id() + " Getting User Input Info: %s", data.data)
         dir_str = data.data # input received (will always be a string)
+
+	return # This callback is currentlys
 
 	def send(values):
             values = [-v for v in values]
@@ -83,9 +85,6 @@ class rospibot_network:
     	        send([0,0,0,0])
     	        rospy.loginfo(" - Stop")
 		self.controlInfoPub.publish("stop")
-
-    def callback2(self,data):
-	#do nothing
 
 def main(args):
     rospi_net = rospibot_network()
