@@ -1,0 +1,10 @@
+<launch>
+
+  <node name="ros_joy_controller" pkg="rospibot_network" type="talker.py" />
+
+  <node name="image_converter_listener" pkg="image_converter" type="listener.py" />
+  <node name="redmask_listener" pkg="image_converter" type="mask_listener.py" />
+  <node name="greyscale_listener" pkg="image_converter" type="grey_listener.py" />
+
+</launch>
+
