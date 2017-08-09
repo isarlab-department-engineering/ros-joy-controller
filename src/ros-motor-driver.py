@@ -9,12 +9,10 @@
 # GitHub repo: https://github.com/isarlab-department-engineering/ros-joy-controller/tree/master
 #
 
-import rospy
+import rospy,sys,atexit,time
 from std_msgs.msg import String
 from geometry_msgs.msg import Twist
 from Adafruit_MotorHAT import Adafruit_MotorHAT, Adafruit_DCMotor
-import atexit
-import time
 
 class motor_driver:
 
@@ -27,7 +25,7 @@ class motor_driver:
         def turnOffMotors():
             self.mh.getMotor(1).run(Adafruit_MotorHAT.RELEASE)
             self.mh.getMotor(2).run(Adafruit_MotorHAT.RELEASE)
-	        atexit.register(turnOffMotors)
+	    atexit.register(turnOffMotors)
 
         # setup 2 motors
         self.mLeft = self.mh.getMotor(1) # left motor
