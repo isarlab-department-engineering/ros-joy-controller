@@ -16,11 +16,52 @@ from Adafruit_MotorHAT import Adafruit_MotorHAT, Adafruit_DCMotor
 
 class motor_driver:
 
+    def speedControl(self):
+        # check if l and r speed are in the -255 - 255 range
+        # and set the direction vars, since Adafruit libraries
+        # only allow us to set a positive speed value and then
+        # to move the motors backward/forward
+
+        if(self.leftSpeed >= 0):
+            self.leftDir = 1
+            if(self.leftSpeed > 255):
+                self.leftSpeed = 255
+        else:
+            self.leftDir = -1
+            self.leftSpeed = -self.leftSpeed
+            if(self.leftSpeed > 255):
+                self.leftSpeed = 255
+
+        if(self.rightSpeed >= 0):
+            self.rightDir = 1
+            if(self.rightSpeed > 255):
+                self.rightSpeed = 255
+        else:
+            self.rightDir = -1
+            self.rightSpeed = -self.rightSpeed
+            if(self.rightSpeed > 255):
+                self.rightSpeed = 255
+
+
+    def setMotorSpeed(self):
+        self.mLeft.setSpeed(int(self.leftSpeed))
+        self.mRight.setSpeed(int(self.rightSpeed))
+
+        if(self.leftDir == 1): # move left motor forward
+            self.mLeft.run(Adafruit_MotorHAT.FORWARD)
+        else: # move left motor backward
+            self.mLeft.run(Adafruit_MotorHAT.BACKWARD)
+
+        if(self.rightDir == 1): # move right motor forward
+            self.mRight.run(Adafruit_MotorHAT.FORWARD)
+        else: # move right motor backward
+            self.mRight.run(Adafruit_MotorHAT.BACKWARD)
+
     def __init__(self):
 
         # motor HAT setup
         self.mh = Adafruit_MotorHAT(addr=0x60) # setup Adafruit Motor HAT on 0x60 address
-
+	
         # at exit code, to auto-disable motor on shutdown
         def turnOffMotors():
             self.mh.getMotor(1).run(Adafruit_MotorHAT.RELEASE)
@@ -42,8 +83,6 @@ class motor_driver:
 
     def callback(self,data):
         rospy.loginfo(rospy.get_caller_id() + " Incoming Twist Message")
-
-        msg = data.data
 
         # converts angular + linear values from cmd_vel
         # to 2 speed values for the motors
@@ -71,56 +110,13 @@ class motor_driver:
         # modelling the difference on the two speeds
         diffParam = 2.0
 
-        velDiff = (WHEEL_DIST * msg.angular.z) / diffParam;
-        if(msg.linear.x < 0): # moving backward
+        velDiff = (WHEEL_DIST * data.angular.z) / diffParam;
+        if(data.linear.x < 0): # moving backward
             velDiff = -velDiff # reverse the curve arc
-        self.leftSpeed = (msg.linear.x + velDiff) #/ WHEEL_RADIUS
-        self.rightSpeed = (msg.linear.x - velDiff) #/ WHEEL_RADIUS
-
-        speedControl()
-
-        setMotorSpeed()
-
-    def speedControl():
-        # check if l and r speed are in the -255 - 255 range
-        # and set the direction vars, since Adafruit libraries
-        # only allow us to set a positive speed value and then
-        # to move the motors backward/forward
-
-        if(self.leftSpeed >= 0):
-            self.leftDir = 1
-            if(self.leftSpeed > 255):
-                self.leftSpeed = 255
-        else:
-            self.leftDir = -1
-            self.leftSpeed = -self.leftSpeed
-            if(self.leftSpeed > 255):
-                self.leftSpeed = 255
-
-        if(self.rightSpeed >= 0):
-            self.rightDir = 1
-            if(self.rightSpeed > 255):
-                self.rightSpeed = 255
-        else:
-            self.rightDir = -1
-            self.rightSpeed = -self.rightSpeed
-            if(self.rightSpeed > 255):
-                self.rightSpeed = 255
-
-
-    def setMotorSpeed():
-        self.mLeft.setSpeed(self.leftSpeed)
-        self.mRight.setSpeed(self.rightSpeed)
-
-        if(self.leftDir == 1): # move left motor forward
-            self.mLeft.run(Adafruit_MotorHAT.FORWARD)
-        else: # move left motor backward
-            self.mLeft.run(Adafruit_MotorHAT.BACKWARD)
-
-        if(self.rightDir == 1): # move right motor forward
-            self.mRight.run(Adafruit_MotorHAT.FORWARD)
-        else: # move right motor backward
-            self.mRight.run(Adafruit_MotorHAT.BACKWARD)
+        self.leftSpeed = (data.linear.x + velDiff) #/ WHEEL_RADIUS
+        self.rightSpeed = (data.linear.x - velDiff) #/ WHEEL_RADIUS
+	self.speedControl()
+        self.setMotorSpeed()
 
 def main(args):
     m_driver = motor_driver()
