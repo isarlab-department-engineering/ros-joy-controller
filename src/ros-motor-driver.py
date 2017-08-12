@@ -9,14 +9,83 @@
 # GitHub repo: https://github.com/isarlab-department-engineering/ros-joy-controller/tree/master
 #
 
-import rospy,sys,atexit,time
+import rospy
 from std_msgs.msg import String
 from geometry_msgs.msg import Twist
 from Adafruit_MotorHAT import Adafruit_MotorHAT, Adafruit_DCMotor
+import atexit
+import time
 
 class motor_driver:
 
-    def speedControl(self):
+    def __init__(self):
+
+        # motor HAT setup
+        self.mh = Adafruit_MotorHAT(addr=0x60) # setup Adafruit Motor HAT on 0x60 address
+
+        # at exit code, to auto-disable motor on shutdown
+        def turnOffMotors():
+            self.mh.getMotor(1).run(Adafruit_MotorHAT.RELEASE)
+            self.mh.getMotor(2).run(Adafruit_MotorHAT.RELEASE)
+	    atexit.register(turnOffMotors)
+
+        # setup 2 motors
+        self.mLeft = self.mh.getMotor(1) # left motor
+        self.mRight = self.mh.getMotor(2) # right motor
+
+        # speed vars
+        self.leftSpeed = 0
+        self.rightSpeed = 0
+        # dir vars (1 = move forward, -1 = move backward)
+        self.leftDir = 1
+        self.rightDir = 1
+
+
+        # distance between the two wheels of the robot (cm)
+        self.WHEEL_DIST = 10 #TODO misure this param
+
+        # wheel radius, not needed right now
+        # but could be useful for a more accurate control
+        # WHEEL_RADIUS = 2.5
+
+        rospy.Subscriber("cmd_vel", Twist, self.callback) # subscribe to cmd_vel topic
+
+    def callback(self,data):
+        rospy.loginfo(rospy.get_caller_id() + " Incoming Twist Message")
+
+        #msg = data.data # wrong, data already represents the whole twist message
+        msg = data
+
+        # converts angular + linear values from cmd_vel
+        # to 2 speed values for the motors
+        #
+        # we only need two of the six available values
+        # so input Twist message will always be:
+        # [ L X X ] [ X X A ]
+        # with L representing the linear x-axis velocity
+        # A representing the angular z-axis velocity
+        # and X are values we don't need here
+        #
+        # good kown values are L = 150 and A = 10 -> 30 ( +/- )
+        # (-10 = turn left, 0 = go straight, 10 = turn right)
+        # angular 30 and linear 150 will make the robot turn with
+        # only one wheel, while the other motor will be at 0 speed
+
+        # change this to change the curve arc
+        # modelling the difference on the two speeds
+        diffParam = 2.0
+
+        velDiff = (self.WHEEL_DIST * msg.angular.z) / diffParam;
+        if(msg.linear.x < 0): # moving backward
+            velDiff = -velDiff # reverse the curve arc
+        self.leftSpeed = (msg.linear.x + velDiff) #/ WHEEL_RADIUS
+        self.rightSpeed = (msg.linear.x - velDiff) #/ WHEEL_RADIUS
+
+        speedControl()
+
+        setMotorSpeed()
+
+    def speedControl():
         # check if l and r speed are in the -255 - 255 range
         # and set the direction vars, since Adafruit libraries
         # only allow us to set a positive speed value and then
@@ -43,9 +112,9 @@ class motor_driver:
                 self.rightSpeed = 255
 
 
-    def setMotorSpeed(self):
-        self.mLeft.setSpeed(int(self.leftSpeed))
-        self.mRight.setSpeed(int(self.rightSpeed))
+    def setMotorSpeed():
+        self.mLeft.setSpeed(self.leftSpeed)
+        self.mRight.setSpeed(self.rightSpeed)
 
         if(self.leftDir == 1): # move left motor forward
             self.mLeft.run(Adafruit_MotorHAT.FORWARD)
@@ -56,67 +125,6 @@ class motor_driver:
             self.mRight.run(Adafruit_MotorHAT.FORWARD)
         else: # move right motor backward
             self.mRight.run(Adafruit_MotorHAT.BACKWARD)
-
-    def __init__(self):
-
-        # motor HAT setup
-        self.mh = Adafruit_MotorHAT(addr=0x60) # setup Adafruit Motor HAT on 0x60 address
-	
-        # at exit code, to auto-disable motor on shutdown
-        def turnOffMotors():
-            self.mh.getMotor(1).run(Adafruit_MotorHAT.RELEASE)
-            self.mh.getMotor(2).run(Adafruit_MotorHAT.RELEASE)
-	    atexit.register(turnOffMotors)
-
-        # setup 2 motors
-        self.mLeft = self.mh.getMotor(1) # left motor
-        self.mRight = self.mh.getMotor(2) # right motor
-
-        # speed vars
-        self.leftSpeed = 0
-        self.rightSpeed = 0
-        # dir vars (1 = move forward, -1 = move backward)
-        self.leftDir = 1
-        self.rightDir = 1
-
-        rospy.Subscriber("cmd_vel", Twist, self.callback) # subscribe to cmd_vel topic
-
-    def callback(self,data):
-        rospy.loginfo(rospy.get_caller_id() + " Incoming Twist Message")
-
-        # converts angular + linear values from cmd_vel
-        # to 2 speed values for the motors
-        #
-        # we only need two of the six available values
-        # so input Twist message will always be:
-        # [ L X X ] [ X X A ]
-        # with L representing the linear x-axis velocity
-        # A representing the angular z-axis velocity
-        # and X are values we don't need here
-        #
-        # good kown values are L = 150 and A = 10 -> 30 ( +/- )
-        # (-10 = turn left, 0 = go straight, 10 = turn right)
-        # angular 30 and linear 150 will make the robot turn with
-        # only one wheel, while the other motor will be at 0 speed
-
-        # distance between the two wheels of the robot (cm)
-        WHEEL_DIST = 10 #TODO misure this param
-
-        # wheel radius, not needed right now
-        # but could be useful for a more accurate control
-        # WHEEL_RADIUS = 2.5
-
-        # change this to change the curve arc
-        # modelling the difference on the two speeds
-        diffParam = 2.0
-
-        velDiff = (WHEEL_DIST * data.angular.z) / diffParam;
-        if(data.linear.x < 0): # moving backward
-            velDiff = -velDiff # reverse the curve arc
-        self.leftSpeed = (data.linear.x + velDiff) #/ WHEEL_RADIUS
-        self.rightSpeed = (data.linear.x - velDiff) #/ WHEEL_RADIUS
-	self.speedControl()
-        self.setMotorSpeed()
 
 def main(args):
     m_driver = motor_driver()
@@ -129,3 +137,4 @@ def main(args):
 
 if __name__ == '__main__':
     main(sys.argv)
+
