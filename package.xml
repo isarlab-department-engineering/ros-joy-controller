@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>rospibot_network</name>
+  <name>joy_follower</name>
   <version>1.0.0</version>
   <description>Network package for rospibot project</description>
 
