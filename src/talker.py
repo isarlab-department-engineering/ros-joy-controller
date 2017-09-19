@@ -26,28 +26,35 @@ def talker():
         dir_str = raw_input("Choose direction: ")
         rospy.loginfo(dir_str)
 	if dir_str == 'w':
-		twistmessage.linear.x=100
-		twistmessage.linear.y=0
+		twistmessage.linear.x=140
+		twistmessage.linear.y=140
 		twistmessage.linear.z=0
 		twistmessage.angular.x=0
 		twistmessage.angular.y=0
 		twistmessage.angular.z=0
 	elif dir_str == 's':
-                twistmessage.linear.x=0
+                twistmessage.linear.x=-140
+                twistmessage.linear.y=-140
+                twistmessage.linear.z=0
+                twistmessage.angular.x=0
+                twistmessage.angular.y=0
+                twistmessage.angular.z=0
+	elif dir_str == 'd':
+                twistmessage.linear.x=100
                 twistmessage.linear.y=0
                 twistmessage.linear.z=0
                 twistmessage.angular.x=0
                 twistmessage.angular.y=0
-                twistmessage.angular.z=10
+                twistmessage.angular.z=0
 	elif dir_str == 'a':
                 twistmessage.linear.x=0
-                twistmessage.linear.y=0
+                twistmessage.linear.y=100
                 twistmessage.linear.z=0
                 twistmessage.angular.x=0
                 twistmessage.angular.y=0
-                twistmessage.angular.z=-10
-	elif dir_str == 'd':
-                twistmessage.linear.x=-100
+                twistmessage.angular.z=0
+	elif dir_str == 'x':
+                twistmessage.linear.x=0
                 twistmessage.linear.y=0
                 twistmessage.linear.z=0
                 twistmessage.angular.x=0
