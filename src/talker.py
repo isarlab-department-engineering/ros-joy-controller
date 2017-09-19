@@ -19,7 +19,7 @@ twistmessage.angular.y=0
 twistmessage.angular.z=0
 
 def talker():
-    pub = rospy.Publisher('cmd_vel', Twist, queue_size=10) # publish on ros_joy_controller topic
+    pub = rospy.Publisher('cmd_vel', Twist, queue_size=1) # publish on ros_joy_controller topic
     rospy.init_node('ros_joy_controller', anonymous=True) # init a ros_joy_controller node
     rate = rospy.Rate(10) # 10hz
     while not rospy.is_shutdown(): # loop until shutdown
