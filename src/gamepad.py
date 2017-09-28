@@ -12,7 +12,7 @@ from geometry_msgs.msg import Twist
 from sensor_msgs.msg import Joy 
 
 twistmessage = Twist()
-pub = rospy.Publisher('cmd_vel', Twist, queue_size=1) # publish on ros_joy_controller topic
+pub = rospy.Publisher('follow_topic', Twist, queue_size=1) # publish on ros_joy_controller topic
 
 def mainFunction():
     rospy.init_node('ros_joy_controller', anonymous=True) # init a ros_joy_controller node
