@@ -103,19 +103,19 @@ def followFunction(data):
         releaseLock()
     elif direction[0] == 0.0 and direction[1] == 0.0:
         twistmessage.linear.x = 0
-        twistmessage.linear.y = 0
+        twistmessage.angular.z = 0
     elif direction[1] > 0.0:
-        twistmessage.linear.x = 100
-        twistmessage.linear.y = 100
+        twistmessage.linear.x = 0.2
+	twistmessage.angular.z = 0
     elif direction[1] < 0.0:
-        twistmessage.linear.x = -100
-        twistmessage.linear.y = -100
+        twistmessage.linear.x = -0.2
+	twistmessage.angular.z = 0
     elif direction[0] > 0.0:
-        twistmessage.linear.x = 0
-        twistmessage.linear.y = 80
+        twistmessage.linear.x = 0.0
+        twistmessage.angular.z = 0.5
     elif direction[0] < 0.0: 
-        twistmessage.linear.x = 80
-        twistmessage.linear.y = 0
+        twistmessage.linear.x = 0.0
+        twistmessage.angular.z = -0.5
     print(twistmessage)
     followmessage.twist = twistmessage
     pub.publish(followmessage) # publish on the topic

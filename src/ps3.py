@@ -7,7 +7,7 @@
 # GitHub repo: https://github.com/isarlab-department-engineering/ros-joy-controller
 #
 
-import rospy,sys
+import rospy,sys,numpy
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import Joy 
 from master_node.msg import *
@@ -30,6 +30,8 @@ followmessage.id = id_node
 lock = False
 
 jump = False
+
+max_vel = 200
 
 
 pub = rospy.Publisher('follow_topic', Follow, queue_size=1) # publish on ros_joy_controller topic
@@ -60,14 +62,16 @@ def requestLock(data):
     elif jump:
         jump = False
     else:
-        resp = request_lock_service(id_node)
-        print(resp)
-        if resp:
-            lock = True
-            followFunction(data)
-        else:
-            msg_shared = rospy.wait_for_message("/lock_shared", Lock)
-            checkMessage(msg_shared)
+
+        if numpy.abs(data.axes[0])>0.02 or numpy.abs(data.axes[1])>0.02:
+            resp = request_lock_service(id_node)
+            print(resp)
+            if resp:
+                lock = True
+                followFunction(data)
+            else:
+                msg_shared = rospy.wait_for_message("/lock_shared", Lock)
+                checkMessage(msg_shared)
 
 def releaseLock():
     global id_node, lock
@@ -92,30 +96,27 @@ def checkMessage(data):
 
 
 def followFunction(data):
-    global jump
-    print(data)
+    global jump, max_vel
+    #print(data)
 
     direction = data.axes # [0]>0 left, [0]<0 right; [1]>0 front, [1]<0 rear
     buttons = data.buttons
-    print (buttons[9])
-    if buttons[9] == 1:
+
+    if buttons[3] == 1:
         jump = True
         releaseLock()
-    elif direction[0] == 0.0 and direction[1] == 0.0:
-        twistmessage.linear.x = 0
-        twistmessage.linear.y = 0
-    elif direction[1] > 0.0:
-        twistmessage.linear.x = 100
-        twistmessage.linear.y = 100
-    elif direction[1] < 0.0:
-        twistmessage.linear.x = -100
-        twistmessage.linear.y = -100
-    elif direction[0] > 0.0:
-        twistmessage.linear.x = 0
-        twistmessage.linear.y = 80
-    elif direction[0] < 0.0: 
-        twistmessage.linear.x = 80
-        twistmessage.linear.y = 0
+    else:
+        turn = direction[0]
+        go = direction[1]
+
+        print (go)
+
+        if turn > 0:
+            twistmessage.linear.x = (go*max_vel)/2 + (turn*max_vel)/2
+            twistmessage.linear.y = (go*max_vel)
+        else:
+            twistmessage.linear.x = (go*max_vel)
+            twistmessage.linear.y = (go*max_vel)/2 + (turn*max_vel)/2           
     print(twistmessage)
     followmessage.twist = twistmessage
     pub.publish(followmessage) # publish on the topic
